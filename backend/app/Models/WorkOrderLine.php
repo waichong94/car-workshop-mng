@@ -12,6 +12,15 @@ class WorkOrderLine extends Model
         'description', 'qty', 'unit_price', 'discount',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'qty'        => 'float',
+            'unit_price' => 'float',
+            'discount'   => 'float',
+        ];
+    }
+
     public function workOrder(): BelongsTo
     {
         return $this->belongsTo(WorkOrder::class);
