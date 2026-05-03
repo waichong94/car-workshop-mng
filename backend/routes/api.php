@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CustomerController;
+use App\Http\Controllers\Api\V1\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -15,5 +16,8 @@ Route::prefix('v1')->group(function () {
 
         // Customers
         Route::apiResource('customers', CustomerController::class);
+
+        // Vehicles
+        Route::apiResource('vehicles', VehicleController::class);
     });
 });
