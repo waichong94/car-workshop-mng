@@ -29,6 +29,7 @@ export default function WorkOrderDetailPage() {
   const { id } = useParams();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
+  const [confirmComplete, setConfirmComplete] = useState(false);
   const [addingLine, setAddingLine] = useState(false);
   const [editingLine, setEditingLine] = useState(null);
   const [lineForm, setLineForm] = useState(EMPTY_LINE);
@@ -150,7 +151,7 @@ export default function WorkOrderDetailPage() {
               <div className="flex gap-2 flex-wrap justify-end">
                 {actions.map((a) => (
                   <button key={a.status} disabled={transitionMutation.isPending}
-                    onClick={() => transitionMutation.mutate({ status: a.status })}
+                    onClick={() => a.status === 'completed' ? setConfirmComplete(true) : transitionMutation.mutate({ status: a.status })}
                     className={`px-3 py-1.5 rounded text-sm font-medium disabled:opacity-50 ${BTN_STYLES[a.style]}`}>
                     {a.label}
                   </button>
@@ -286,6 +287,39 @@ export default function WorkOrderDetailPage() {
       </div>
 
       {editing && <WorkOrderForm workOrderId={Number(id)} onClose={() => setEditing(false)} />}
+
+      {/* Complete confirmation modal */}
+      {confirmComplete && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-2">Mark as Completed?</h3>
+            <p className="text-sm text-gray-600 mb-1">
+              Work order <span className="font-mono font-medium">{wo.reference}</span> will be marked as completed.
+            </p>
+            <p className="text-sm text-red-600 font-medium mb-5">
+              This cannot be undone — the work order will be locked for editing.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmComplete(false)}
+                className="px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50"
+              >
+                Go Back
+              </button>
+              <button
+                disabled={transitionMutation.isPending}
+                onClick={() => {
+                  transitionMutation.mutate({ status: 'completed' });
+                  setConfirmComplete(false);
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700 disabled:opacity-50"
+              >
+                {transitionMutation.isPending ? 'Completing…' : 'Yes, Complete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
