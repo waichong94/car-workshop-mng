@@ -209,10 +209,16 @@ export default function WorkOrderDetailPage() {
             {/* Inline add/edit form */}
             {addingLine && (
               <tr>
-                <td colSpan={canEdit ? 7 : 6} className="px-4 py-3 bg-blue-50">
-                  <form onSubmit={handleLineSubmit}>
-                    <div className="grid grid-cols-12 gap-2 items-start">
-                      <div className="col-span-2">
+                <td colSpan={canEdit ? 7 : 6} className="px-4 py-4 bg-blue-50 border-t border-blue-100">
+                  <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-3">
+                    {editingLine ? 'Edit Line Item' : 'Add Line Item'}
+                  </p>
+                  <form onSubmit={handleLineSubmit} className="space-y-3">
+
+                    {/* Row 1: Type + conditional picker + Description */}
+                    <div className="flex flex-wrap gap-3">
+                      <div className="w-36">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Type</label>
                         <select value={lineForm.type} onChange={setLine('type')} className={inputCls + ' w-full'}>
                           <option value="labour">Labour</option>
                           <option value="service">Service</option>
@@ -222,9 +228,10 @@ export default function WorkOrderDetailPage() {
                       </div>
 
                       {lineForm.type === 'service' && (
-                        <div className="col-span-3">
+                        <div className="w-52">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Service Catalog</label>
                           <select value={lineForm.service_id} onChange={handleServiceChange} className={inputCls + ' w-full'}>
-                            <option value="">Pick service…</option>
+                            <option value="">Select service…</option>
                             {services.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                           </select>
                           {lineErrors.service_id && <p className="text-red-500 text-xs mt-0.5">{lineErrors.service_id[0]}</p>}
@@ -232,38 +239,91 @@ export default function WorkOrderDetailPage() {
                       )}
 
                       {lineForm.type === 'part' && (
-                        <div className="col-span-3">
+                        <div className="w-52">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Parts Catalog</label>
                           <select value={lineForm.part_id} onChange={handlePartChange} className={inputCls + ' w-full'}>
-                            <option value="">Pick part…</option>
+                            <option value="">Select part…</option>
                             {parts.map((p) => <option key={p.id} value={p.id}>{p.name}{p.sku ? ` (${p.sku})` : ''}</option>)}
                           </select>
                           {lineErrors.part_id && <p className="text-red-500 text-xs mt-0.5">{lineErrors.part_id[0]}</p>}
                         </div>
                       )}
 
-                      <div className={lineForm.type === 'labour' || lineForm.type === 'other' ? 'col-span-5' : 'col-span-2'}>
-                        <input value={lineForm.description} onChange={setLine('description')} placeholder="Description" className={inputCls + ' w-full'} required />
+                      <div className="flex-1 min-w-48">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Description *</label>
+                        <input
+                          value={lineForm.description}
+                          onChange={setLine('description')}
+                          placeholder="e.g. Engine oil replacement"
+                          className={inputCls + ' w-full'}
+                          required
+                        />
                         {lineErrors.description && <p className="text-red-500 text-xs mt-0.5">{lineErrors.description[0]}</p>}
                       </div>
+                    </div>
 
-                      <div className="col-span-1">
-                        <input type="number" value={lineForm.qty} onChange={setLine('qty')} min="0.01" step="0.01" placeholder="Qty" className={inputCls + ' w-full'} required />
+                    {/* Row 2: Qty + Unit Price + Discount + Live Total */}
+                    <div className="flex flex-wrap gap-3 items-end">
+                      <div className="w-24">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Quantity *</label>
+                        <input
+                          type="number" value={lineForm.qty} onChange={setLine('qty')}
+                          min="0.01" step="0.01"
+                          className={inputCls + ' w-full'}
+                          required
+                        />
                       </div>
-                      <div className="col-span-2">
-                        <input type="number" value={lineForm.unit_price} onChange={setLine('unit_price')} min="0" step="0.01" placeholder="Unit Price" className={inputCls + ' w-full'} required />
+                      <div className="w-36">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Unit Price (RM) *</label>
+                        <input
+                          type="number" value={lineForm.unit_price} onChange={setLine('unit_price')}
+                          min="0" step="0.01"
+                          className={inputCls + ' w-full'}
+                          required
+                        />
                       </div>
-                      <div className="col-span-1">
-                        <input type="number" value={lineForm.discount} onChange={setLine('discount')} min="0" max="100" placeholder="Disc%" className={inputCls + ' w-full'} />
+                      <div className="w-28">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Discount (%)</label>
+                        <input
+                          type="number" value={lineForm.discount} onChange={setLine('discount')}
+                          min="0" max="100" step="0.01" placeholder="0"
+                          className={inputCls + ' w-full'}
+                        />
                       </div>
-                      <div className="col-span-1 flex gap-1">
-                        <button type="submit" disabled={addLineMutation.isPending || updateLineMutation.isPending}
-                          className="px-2 py-1.5 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 disabled:opacity-50">
-                          {editingLine ? 'Update' : 'Add'}
+                      <div className="w-36">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Line Total</label>
+                        <div className="border border-gray-200 bg-white rounded px-3 py-1.5 text-sm font-semibold text-gray-800">
+                          RM {(() => {
+                            const qty   = parseFloat(lineForm.qty)        || 0;
+                            const price = parseFloat(lineForm.unit_price) || 0;
+                            const disc  = parseFloat(lineForm.discount)   || 0;
+                            const gross = qty * price;
+                            return (gross - gross * disc / 100).toFixed(2);
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Spacer + action buttons aligned to bottom */}
+                      <div className="flex gap-2 ml-auto">
+                        <button
+                          type="button"
+                          onClick={() => { setAddingLine(false); setEditingLine(null); setLineErrors({}); }}
+                          className="px-4 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-100"
+                        >
+                          Cancel
                         </button>
-                        <button type="button" onClick={() => { setAddingLine(false); setEditingLine(null); setLineErrors({}); }}
-                          className="px-2 py-1.5 border border-gray-300 rounded text-xs hover:bg-gray-50">✕</button>
+                        <button
+                          type="submit"
+                          disabled={addLineMutation.isPending || updateLineMutation.isPending}
+                          className="px-4 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          {addLineMutation.isPending || updateLineMutation.isPending
+                            ? 'Saving…'
+                            : editingLine ? 'Update Line' : 'Add Line'}
+                        </button>
                       </div>
                     </div>
+
                   </form>
                 </td>
               </tr>
