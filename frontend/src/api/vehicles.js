@@ -13,4 +13,4 @@ export const updateVehicle = (id, data) =>
   client.put(`/vehicles/${id}`, data).then((r) => r.data);
 
 export const deleteVehicle = (id) =>
-  client.delete(`/vehicles/${id}`);
+  client.delete(`/vehicles/${id}`).then(() => null);

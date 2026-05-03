@@ -10,7 +10,7 @@ export default function VehiclesPage() {
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['vehicles', { search, page }],
     queryFn: () => getVehicles({ search: search || undefined, page }),
   });
@@ -18,6 +18,7 @@ export default function VehiclesPage() {
   const deleteMutation = useMutation({
     mutationFn: deleteVehicle,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['vehicles'] }),
+    onError: (err) => alert(err.response?.data?.message ?? 'Failed to delete vehicle.'),
   });
 
   const handleDelete = (id, plate) => {
@@ -48,9 +49,10 @@ export default function VehiclesPage() {
         className="mb-4 w-full max-w-sm border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
 
-      {isLoading ? (
-        <p className="text-gray-500">Loading…</p>
-      ) : (
+      {isLoading && <p className="text-gray-500">Loading…</p>}
+      {isError && <p className="text-red-500">Failed to load vehicles. Please try again.</p>}
+
+      {!isLoading && !isError && (
         <>
           <div className="bg-white rounded shadow overflow-hidden">
             <table className="w-full text-sm">
@@ -81,10 +83,7 @@ export default function VehiclesPage() {
                     <td className="px-4 py-3 text-gray-600">{v.color ?? '—'}</td>
                     <td className="px-4 py-3">
                       {v.customer ? (
-                        <Link
-                          to={`/customers/${v.customer.id}`}
-                          className="text-blue-600 hover:underline"
-                        >
+                        <Link to={`/customers/${v.customer.id}`} className="text-blue-600 hover:underline">
                           {v.customer.name}
                         </Link>
                       ) : '—'}
@@ -93,18 +92,8 @@ export default function VehiclesPage() {
                       {v.mileage != null ? v.mileage.toLocaleString() + ' km' : '—'}
                     </td>
                     <td className="px-4 py-3 text-right space-x-2">
-                      <button
-                        onClick={() => setEditing(v.id)}
-                        className="text-blue-600 hover:underline"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(v.id, v.plate)}
-                        className="text-red-500 hover:underline"
-                      >
-                        Delete
-                      </button>
+                      <button onClick={() => setEditing(v.id)} className="text-blue-600 hover:underline">Edit</button>
+                      <button onClick={() => handleDelete(v.id, v.plate)} className="text-red-500 hover:underline">Delete</button>
                     </td>
                   </tr>
                 ))}
@@ -114,23 +103,9 @@ export default function VehiclesPage() {
 
           {meta && meta.last_page > 1 && (
             <div className="mt-4 flex items-center gap-2">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage((p) => p - 1)}
-                className="px-3 py-1 border rounded text-sm disabled:opacity-40"
-              >
-                Prev
-              </button>
-              <span className="text-sm text-gray-600">
-                Page {meta.current_page} of {meta.last_page}
-              </span>
-              <button
-                disabled={page === meta.last_page}
-                onClick={() => setPage((p) => p + 1)}
-                className="px-3 py-1 border rounded text-sm disabled:opacity-40"
-              >
-                Next
-              </button>
+              <button disabled={page === 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1 border rounded text-sm disabled:opacity-40">Prev</button>
+              <span className="text-sm text-gray-600">Page {meta.current_page} of {meta.last_page}</span>
+              <button disabled={page === meta.last_page} onClick={() => setPage((p) => p + 1)} className="px-3 py-1 border rounded text-sm disabled:opacity-40">Next</button>
             </div>
           )}
         </>
