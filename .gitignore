@@ -1,0 +1,27 @@
+# Dependencies
+frontend/node_modules/
+backend/vendor/
+
+# Environment files
+backend/.env
+backend/.env.backup
+backend/.env.production
+
+# Laravel generated
+backend/storage/logs/*.log
+backend/bootstrap/cache/*.php
+
+# Build output
+frontend/dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / Claude Code
+.claude/
+*.local
+
+# Test coverage
+backend/coverage/
+frontend/coverage/
