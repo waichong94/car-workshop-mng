@@ -76,8 +76,8 @@ export default function useAppointmentForm({ appointmentId, onClose }) {
       if (isEdit) {
         queryClient.invalidateQueries({ queryKey: ['appointment', appointmentId] });
       } else {
-        const newId = String(response?.data?.id);
-        if (newId) queryClient.setQueryData(['appointment', newId], response);
+        const newId = response?.data?.id;
+        if (newId) queryClient.setQueryData(['appointment', String(newId)], response);
       }
       onClose();
     },

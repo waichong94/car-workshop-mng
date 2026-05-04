@@ -13,7 +13,7 @@ export const updateAppointment = (id, data) =>
   client.put(`/appointments/${id}`, data).then((r) => r.data);
 
 export const deleteAppointment = (id) =>
-  client.delete(`/appointments/${id}`).then((r) => r.data);
+  client.delete(`/appointments/${id}`).then(() => null);
 
 export const transitionAppointment = (id, status) =>
   client.patch(`/appointments/${id}/transition`, { status }).then((r) => r.data);
