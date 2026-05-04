@@ -21,7 +21,7 @@ class AppointmentService
     public function list(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         $query = Appointment::query()
-            ->select(['id', 'customer_id', 'vehicle_id', 'scheduled_at', 'status', 'notes', 'created_at'])
+            ->select(['id', 'customer_id', 'vehicle_id', 'scheduled_at', 'status', 'notes', 'created_at', 'updated_at'])
             ->with(['customer:id,name', 'vehicle:id,plate,make,model']);
 
         if (!empty($filters['status'])) {
@@ -82,6 +82,7 @@ class AppointmentService
 
         $appt->status = $target;
         $appt->save();
+        $appt->load(['customer:id,name', 'vehicle:id,plate,make,model']);
 
         return $appt;
     }
