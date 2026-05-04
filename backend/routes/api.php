@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AppointmentController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\PartController;
@@ -32,6 +33,10 @@ Route::prefix('v1')->group(function () {
         Route::post('work-orders/{workOrder}/lines', [WorkOrderLineController::class, 'store']);
         Route::put('work-orders/{workOrder}/lines/{line}', [WorkOrderLineController::class, 'update']);
         Route::delete('work-orders/{workOrder}/lines/{line}', [WorkOrderLineController::class, 'destroy']);
+
+        // Appointments
+        Route::apiResource('appointments', AppointmentController::class);
+        Route::patch('appointments/{appointment}/transition', [AppointmentController::class, 'transition']);
 
         // Catalog (for pickers)
         Route::get('services', [ServiceController::class, 'index']);
