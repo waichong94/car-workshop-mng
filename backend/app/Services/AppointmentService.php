@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class AppointmentService
 {
-    public const TRANSITIONS = [
+    private const TRANSITIONS = [
         'pending'     => ['confirmed', 'cancelled'],
         'confirmed'   => ['in_progress', 'cancelled'],
         'in_progress' => ['completed', 'cancelled'],
@@ -22,7 +22,7 @@ class AppointmentService
     {
         $query = Appointment::query()
             ->select(['id', 'customer_id', 'vehicle_id', 'scheduled_at', 'status', 'notes', 'created_at', 'updated_at'])
-            ->with(['customer:id,name', 'vehicle:id,plate,make,model']);
+            ->with(['customer:id,name', 'vehicle:id,plate,make,model,year']);
 
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);
@@ -52,7 +52,7 @@ class AppointmentService
 
         return DB::transaction(function () use ($data) {
             $appt = Appointment::create($data + ['status' => 'pending']);
-            $appt->load(['customer:id,name', 'vehicle:id,plate,make,model']);
+            $appt->load(['customer:id,name', 'vehicle:id,plate,make,model,year']);
 
             return $appt;
         });
@@ -64,7 +64,7 @@ class AppointmentService
 
         return DB::transaction(function () use ($appt, $data) {
             $appt->update($data);
-            $appt->load(['customer:id,name', 'vehicle:id,plate,make,model']);
+            $appt->load(['customer:id,name', 'vehicle:id,plate,make,model,year']);
 
             return $appt;
         });
@@ -80,11 +80,12 @@ class AppointmentService
             );
         }
 
-        $appt->status = $target;
-        $appt->save();
-        $appt->load(['customer:id,name', 'vehicle:id,plate,make,model']);
-
-        return $appt;
+        return DB::transaction(function () use ($appt, $target) {
+            $appt->status = $target;
+            $appt->save();
+            $appt->load(['customer:id,name', 'vehicle:id,plate,make,model,year']);
+            return $appt;
+        });
     }
 
     public function delete(Appointment $appt): void

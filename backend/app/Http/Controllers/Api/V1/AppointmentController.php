@@ -17,7 +17,7 @@ class AppointmentController extends Controller
 {
     public function __construct(private readonly AppointmentService $service) {}
 
-    public function index(Request $request): JsonResponse|AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
         $filters = $request->only(['status', 'customer_id', 'date']);
 
@@ -58,7 +58,7 @@ class AppointmentController extends Controller
     {
         try {
             return new AppointmentResource(
-                $this->service->transition($appointment, $request->validated()['status'])
+                $this->service->transition($appointment, $request->validated('status'))
             );
         } catch (\InvalidArgumentException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
