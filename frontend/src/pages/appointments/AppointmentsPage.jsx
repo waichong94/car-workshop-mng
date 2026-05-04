@@ -128,14 +128,12 @@ export default function AppointmentsPage() {
                           Edit
                         </button>
                       )}
-                      {['pending', 'cancelled'].includes(appt.status) && (
-                        <button
-                          onClick={() => handleDelete(appt.id)}
-                          className="text-red-500 hover:underline"
-                        >
-                          Delete
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleDelete(appt.id)}
+                        className="text-red-500 hover:underline"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
