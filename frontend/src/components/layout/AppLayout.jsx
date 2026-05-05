@@ -23,6 +23,7 @@ export default function AppLayout() {
           <NavItem to="/" label="Dashboard" />
           <NavItem to="/customers" label="Customers" />
           <NavItem to="/vehicles" label="Vehicles" />
+          <NavItem to="/appointments" label="Appointments" />
           <NavItem to="/work-orders" label="Work Orders" />
         </nav>
         <div className="px-4 py-3 border-t border-gray-700">

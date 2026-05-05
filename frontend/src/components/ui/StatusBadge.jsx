@@ -5,6 +5,8 @@ const STATUS_STYLES = {
   pending_parts: 'bg-orange-100 text-orange-700',
   completed:     'bg-green-100 text-green-700',
   cancelled:     'bg-red-100 text-red-600',
+  pending:       'bg-yellow-100 text-yellow-700',
+  confirmed:     'bg-blue-100 text-blue-700',
 };
 
 const STATUS_LABELS = {
@@ -14,6 +16,8 @@ const STATUS_LABELS = {
   pending_parts: 'Pending Parts',
   completed:     'Completed',
   cancelled:     'Cancelled',
+  pending:       'Pending',
+  confirmed:     'Confirmed',
 };
 
 export default function StatusBadge({ status }) {
