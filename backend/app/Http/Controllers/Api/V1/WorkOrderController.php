@@ -40,6 +40,7 @@ class WorkOrderController extends Controller
             'assignedTo:id,name',
             'lines.service:id,name',
             'lines.part:id,name,sku',
+            'invoice:id,invoice_number,status,work_order_id',
         ]);
 
         return new WorkOrderResource($workOrder);

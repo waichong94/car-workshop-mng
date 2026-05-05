@@ -7,6 +7,9 @@ const STATUS_STYLES = {
   cancelled:     'bg-red-100 text-red-600',
   pending:       'bg-yellow-100 text-yellow-700',
   confirmed:     'bg-blue-100 text-blue-700',
+  issued:        'bg-purple-100 text-purple-700',
+  paid:          'bg-green-100 text-green-700',
+  void:          'bg-red-100 text-red-600',
 };
 
 const STATUS_LABELS = {
@@ -18,6 +21,9 @@ const STATUS_LABELS = {
   cancelled:     'Cancelled',
   pending:       'Pending',
   confirmed:     'Confirmed',
+  issued:        'Issued',
+  paid:          'Paid',
+  void:          'Void',
 };
 
 export default function StatusBadge({ status }) {

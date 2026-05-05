@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AppointmentController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CustomerController;
+use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\PartController;
 use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\VehicleController;
@@ -37,6 +38,10 @@ Route::prefix('v1')->group(function () {
         // Appointments
         Route::apiResource('appointments', AppointmentController::class);
         Route::patch('appointments/{appointment}/transition', [AppointmentController::class, 'transition']);
+
+        // Invoices
+        Route::apiResource('invoices', InvoiceController::class);
+        Route::patch('invoices/{invoice}/transition', [InvoiceController::class, 'transition']);
 
         // Catalog (for pickers)
         Route::get('services', [ServiceController::class, 'index']);

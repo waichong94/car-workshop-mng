@@ -43,6 +43,11 @@ class WorkOrderResource extends JsonResource
                     'total'    => round($this->lines->sum('line_total'), 2),
                 ]
             ),
+            'invoice'      => $this->whenLoaded('invoice', fn () => $this->invoice ? [
+                'id'             => $this->invoice->id,
+                'invoice_number' => $this->invoice->invoice_number,
+                'status'         => $this->invoice->status,
+            ] : null),
             'started_at'   => $this->started_at?->toDateTimeString(),
             'completed_at' => $this->completed_at?->toDateTimeString(),
             'created_at'   => $this->created_at->toDateTimeString(),

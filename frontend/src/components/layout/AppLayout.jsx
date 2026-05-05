@@ -25,6 +25,7 @@ export default function AppLayout() {
           <NavItem to="/vehicles" label="Vehicles" />
           <NavItem to="/appointments" label="Appointments" />
           <NavItem to="/work-orders" label="Work Orders" />
+          <NavItem to="/invoices" label="Invoices" />
         </nav>
         <div className="px-4 py-3 border-t border-gray-700">
           <p className="text-sm text-gray-400 truncate">{user?.name ?? '—'}</p>

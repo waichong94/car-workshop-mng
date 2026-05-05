@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getWorkOrder, transitionWorkOrder, addWorkOrderLine, updateWorkOrderLine, deleteWorkOrderLine } from '../../api/workOrders';
+import { generateInvoice } from '../../api/invoices';
 import { getServices, getParts } from '../../api/catalog';
 import StatusBadge from '../../components/ui/StatusBadge';
 import WorkOrderForm from './WorkOrderForm';
@@ -25,8 +26,11 @@ const BTN_STYLES = {
 
 const EMPTY_LINE = { type: 'labour', service_id: '', part_id: '', description: '', qty: 1, unit_price: 0, discount: 0 };
 
+const EMPTY_INVOICE_FORM = { tax_rate: '0', discount: '0', notes: '', due_at: '' };
+
 export default function WorkOrderDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [confirmComplete, setConfirmComplete] = useState(false);
@@ -34,6 +38,8 @@ export default function WorkOrderDetailPage() {
   const [editingLine, setEditingLine] = useState(null);
   const [lineForm, setLineForm] = useState(EMPTY_LINE);
   const [lineErrors, setLineErrors] = useState({});
+  const [invoiceModal, setInvoiceModal] = useState(false);
+  const [invoiceForm, setInvoiceForm] = useState(EMPTY_INVOICE_FORM);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['work-order', id],
@@ -72,6 +78,28 @@ export default function WorkOrderDetailPage() {
     onSuccess: invalidate,
     onError: (err) => alert(err.response?.data?.message ?? 'Failed to delete line.'),
   });
+
+  const generateMutation = useMutation({
+    mutationFn: generateInvoice,
+    onSuccess: (result) => {
+      invalidate();
+      setInvoiceModal(false);
+      setInvoiceForm(EMPTY_INVOICE_FORM);
+      navigate(`/invoices/${result.data.id}`);
+    },
+    onError: (err) => alert(err.response?.data?.message ?? 'Failed to generate invoice.'),
+  });
+
+  const handleInvoiceSubmit = (e) => {
+    e.preventDefault();
+    generateMutation.mutate({
+      work_order_id: Number(id),
+      tax_rate:      Number(invoiceForm.tax_rate) || 0,
+      discount:      Number(invoiceForm.discount) || 0,
+      notes:         invoiceForm.notes || null,
+      due_at:        invoiceForm.due_at || null,
+    });
+  };
 
   const handleLineSubmit = (e) => {
     e.preventDefault();
@@ -346,7 +374,88 @@ export default function WorkOrderDetailPage() {
         </div>
       </div>
 
+      {/* Invoice section — only visible on completed work orders */}
+      {wo.status === 'completed' && (
+        <div className="bg-white rounded shadow p-5 mb-5">
+          <h2 className="font-semibold text-gray-700 mb-3">Invoice</h2>
+          {wo.invoice ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-600">Invoice generated:</span>
+              <Link to={`/invoices/${wo.invoice.id}`} className="text-blue-600 hover:underline font-mono text-sm">
+                {wo.invoice.invoice_number}
+              </Link>
+              <StatusBadge status={wo.invoice.status} />
+            </div>
+          ) : (
+            <div>
+              <p className="text-sm text-gray-500 mb-3">No invoice has been generated for this work order yet.</p>
+              <button
+                onClick={() => { setInvoiceForm(EMPTY_INVOICE_FORM); setInvoiceModal(true); }}
+                className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
+              >
+                Generate Invoice
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {editing && <WorkOrderForm workOrderId={Number(id)} onClose={() => setEditing(false)} />}
+
+      {/* Generate Invoice modal */}
+      {invoiceModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-2">Generate Invoice</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Invoice for <span className="font-mono font-medium">{wo.reference}</span> —
+              subtotal <strong>RM {Number(totals.subtotal).toFixed(2)}</strong>.
+            </p>
+            <form onSubmit={handleInvoiceSubmit} className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tax Rate (%)</label>
+                <input type="number" min="0" max="100" step="0.01"
+                  value={invoiceForm.tax_rate}
+                  onChange={(e) => setInvoiceForm((f) => ({ ...f, tax_rate: e.target.value }))}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Discount (RM)</label>
+                <input type="number" min="0" step="0.01"
+                  value={invoiceForm.discount}
+                  onChange={(e) => setInvoiceForm((f) => ({ ...f, discount: e.target.value }))}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                <input type="date" value={invoiceForm.due_at}
+                  onChange={(e) => setInvoiceForm((f) => ({ ...f, due_at: e.target.value }))}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea rows={2} value={invoiceForm.notes} placeholder="Optional notes…"
+                  onChange={(e) => setInvoiceForm((f) => ({ ...f, notes: e.target.value }))}
+                  className={inputCls}
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setInvoiceModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50">
+                  Cancel
+                </button>
+                <button type="submit" disabled={generateMutation.isPending}
+                  className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50">
+                  {generateMutation.isPending ? 'Generating…' : 'Generate Invoice'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Complete confirmation modal */}
       {confirmComplete && (
