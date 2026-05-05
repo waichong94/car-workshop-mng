@@ -38,9 +38,9 @@ export default function AppointmentsPage() {
     onError: (err) => alert(err.response?.data?.message ?? 'Failed to delete appointment.'),
   });
 
-  const handleDelete = (id) => {
-    if (!confirm('Delete this appointment?')) return;
-    deleteMutation.mutate(id);
+  const handleDelete = (appt) => {
+    if (!confirm(`Delete appointment on ${formatDateTime(appt.scheduled_at)}?`)) return;
+    deleteMutation.mutate(appt.id);
   };
 
   const appointments = data?.data ?? [];
@@ -129,7 +129,7 @@ export default function AppointmentsPage() {
                         </button>
                       )}
                       <button
-                        onClick={() => handleDelete(appt.id)}
+                        onClick={() => handleDelete(appt)}
                         className="text-red-500 hover:underline"
                       >
                         Delete

@@ -50,7 +50,10 @@ export default function AppointmentDetailPage() {
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteAppointment(id),
-    onSuccess: () => navigate('/appointments'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      navigate('/appointments');
+    },
     onError: (err) => alert(err.response?.data?.message ?? 'Failed to delete appointment.'),
   });
 
