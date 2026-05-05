@@ -13,6 +13,7 @@ import AppointmentsPage from './pages/appointments/AppointmentsPage';
 import AppointmentDetailPage from './pages/appointments/AppointmentDetailPage';
 import InvoicesPage from './pages/invoices/InvoicesPage';
 import InvoiceDetailPage from './pages/invoices/InvoiceDetailPage';
+import PartsPage from './pages/parts/PartsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -47,6 +48,7 @@ export default function App() {
             <Route path="work-orders/:id" element={<WorkOrderDetailPage />} />
             <Route path="invoices" element={<InvoicesPage />} />
             <Route path="invoices/:id" element={<InvoiceDetailPage />} />
+            <Route path="parts" element={<PartsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

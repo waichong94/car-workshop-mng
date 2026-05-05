@@ -10,11 +10,17 @@ class PartResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'          => $this->id,
-            'name'        => $this->name,
-            'sku'         => $this->sku,
-            'unit_price'  => $this->unit_price,
-            'stock_qty'   => $this->stock_qty,
+            'id'            => $this->id,
+            'name'          => $this->name,
+            'sku'           => $this->sku,
+            'description'   => $this->description,
+            'unit_cost'     => $this->unit_cost,
+            'unit_price'    => $this->unit_price,
+            'stock_qty'     => $this->stock_qty,
+            'reorder_level' => $this->reorder_level,
+            'is_low_stock'  => $this->reorder_level > 0 && $this->stock_qty <= $this->reorder_level,
+            'created_at'    => $this->created_at->toDateTimeString(),
+            'updated_at'    => $this->updated_at->toDateTimeString(),
         ];
     }
 }

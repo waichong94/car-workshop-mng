@@ -43,8 +43,11 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('invoices', InvoiceController::class);
         Route::patch('invoices/{invoice}/transition', [InvoiceController::class, 'transition']);
 
+        // Parts inventory (full CRUD + stock adjustment)
+        Route::apiResource('parts', PartController::class);
+        Route::patch('parts/{part}/adjust-stock', [PartController::class, 'adjustStock']);
+
         // Catalog (for pickers)
         Route::get('services', [ServiceController::class, 'index']);
-        Route::get('parts', [PartController::class, 'index']);
     });
 });
